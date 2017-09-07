@@ -141,7 +141,12 @@ public class RCTTwilioChatChannels extends ReactContextBaseJavaModule {
     }
 
     private Channels channels() {
-        return RCTTwilioChatClient.getInstance().client.getChannels();
+        try {
+            return  RCTTwilioChatClient.getInstance().client.getChannels();
+        }
+        catch(IllegalStateException e) {
+            return null;
+        }    
     }
 
     private void createListener(Channel channel) {
@@ -186,10 +191,15 @@ public class RCTTwilioChatChannels extends ReactContextBaseJavaModule {
         });
     }
 
-    @ReactMethod
+     @ReactMethod
     public void getSubscribedChannels(final Promise promise) {
-        List<Channel> list = channels().getSubscribedChannels();
-        promise.resolve(RCTConvert.Channels(new ArrayList<Channel>(list)));
+        Channels channels =  channels();
+        if (channels != null) {
+            List<Channel> list = channels.getSubscribedChannels();
+            promise.resolve(RCTConvert.Channels(new ArrayList<Channel>(list)));
+        } else {
+            promise.reject("get-subscribed-channels-error","Error occurred while attempting to getSubscribedChannels");
+        }
     }
 
     @ReactMethod
